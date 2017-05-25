@@ -14,3 +14,5 @@
 $app->get('/', function () {
     return view('master');
 });
+
+$app->get('/search', 'SearchController@getSearch');
