@@ -6,6 +6,12 @@
         <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.3"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+        <style>
+            [v-cloak] {
+              display: none;
+            }
+        </style>
     </header>
 
     <body>
@@ -23,9 +29,12 @@
                         </span>
                     </div>
                 </div>
+                <div class="col-sm-1 col-sm-offset-8" v-if="results" v-cloak>
+                    <button class="btn btn-default" type="button" @click="download">Download</button>
+                </div>
             </div>
 
-            <div class="row" v-if="results">
+            <div class="row" v-if="results" v-cloak>
                 <div class="col-lg-12">
                     <table class="table table-hover">
                         <tr>
@@ -63,6 +72,12 @@
                     this.$http.get('/search?first_name=' + this.first_name).then(response => {
                         this.results = response.body;
                     });
+                },
+                download: function() {
+                    var id_array = this.results.map(x => { return x.Id; });
+
+                    var url = '/download?' + $.param({'ids': id_array});
+                    window.location = url;
                 }
             }
         });

@@ -15,4 +15,5 @@ $app->get('/', function () {
     return view('master');
 });
 
-$app->get('/search', 'SearchController@getSearch');
+$app->get('/search', 'SearchController@search');
+$app->get('/download', 'SearchController@download');
