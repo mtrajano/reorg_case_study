@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Mtrajano\SimpleExcel\Workbook;
 
 class SearchController extends Controller
 {
@@ -25,38 +26,31 @@ class SearchController extends Controller
             ->whereIn('Id', $idArray)
             ->get();
 
-        $tempFileName = "/tmp/" . uniqid('reorg');
-        $fp = fopen($tempFileName, 'w');
+        $workbook = new Workbook();
+        $worksheet = $workbook->getActiveSheet();
 
-        $header = [
-            'Physician_First_Name',
-            'Physician_Last_Name',
-            'Physician_Specialty',
-            'Physician_License_State_code1',
-            'Date_of_Payment',
-            'Total_Amount_of_Payment_USDollars'
-        ];
+        $row = 1;
+        $header = ['Physician_First_Name', 'Physician_Last_Name', 'Physician_Specialty', 'Physician_License_State_code1', 'Date_of_Payment', 'Total_Amount_of_Payment_USDollars'];
 
-        fputcsv($fp, $header);
+        foreach ($header as $column) {
+            $worksheet[$row][] = $column;
+        }
+        $row++;
 
-        foreach($results as $result) {
-            $row = [
-                $result->Physician_First_Name,
-                $result->Physician_Last_Name,
-                $result->Physician_Specialty,
-                $result->Physician_License_State_code1,
-                $result->Date_of_Payment,
-                $result->Total_Amount_of_Payment_USDollars,
-            ];
-
-            fputcsv($fp, $row);
+        foreach ($results as $result) {
+            $worksheet[$row][] = $result->Physician_First_Name;
+            $worksheet[$row][] = $result->Physician_Last_Name;
+            $worksheet[$row][] = $result->Physician_Specialty;
+            $worksheet[$row][] = $result->Physician_License_State_code1;
+            $worksheet[$row][] = $result->Date_of_Payment;
+            $worksheet[$row][] = $result->Total_Amount_of_Payment_USDollars;
+            $row++;
         }
 
-        fclose($fp);
-
-        $fileName = date('YmdHis') . '.csv';
+        $fileName = date('YmdHis') . '.xlsx';
+        $workbook->save($fileName, Workbook::WRITE_Excel2007);
 
         $responseHeader = ['Content-Type' => 'application/vnd.ms-excel; charset=utf-8', 'Content-Disposition' => 'attachment'];
-        return response()->download($tempFileName, $fileName, $responseHeader)->deleteFileAfterSend(true);
+        return response()->download($fileName, $fileName, $responseHeader)->deleteFileAfterSend(true);
     }
 }
